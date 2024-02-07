@@ -6,7 +6,7 @@ import guru.springframework.msscbeerservice.web.model.BeerDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(uses = {DateConverter.class})
+@Mapper(uses = {DateConverter.class}, componentModel = "spring")
 public interface BeerMapper {
     /*@Mappings(
             @Mapping(source = "minOnHand", target = "quantityOnHand")
