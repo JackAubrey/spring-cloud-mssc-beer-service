@@ -1,4 +1,5 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/JackAubrey/spring-cloud-mssc-beer-service/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/JackAubrey/spring-cloud-mssc-beer-service/tree/master)
+# Master  [![CircleCI](https://dl.circleci.com/status-badge/img/gh/JackAubrey/spring-cloud-mssc-beer-service/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/JackAubrey/spring-cloud-mssc-beer-service/tree/master)
+# Develop [![CircleCI](https://dl.circleci.com/status-badge/img/gh/JackAubrey/spring-cloud-mssc-beer-service/tree/develop.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/JackAubrey/spring-cloud-mssc-beer-service/tree/develop)
 # MSSC Beer Service
 
 Source code in this repository is to support my online courses.
