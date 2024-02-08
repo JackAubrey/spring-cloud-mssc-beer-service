@@ -12,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.UUID;
@@ -92,6 +93,22 @@ public class BeerServiceImpl implements BeerService {
         beer.setUpc(beerDto.getUpc());
 
         return beerMapper.beerToBeerDto( beerRepository.save(beer) );
+    }
+
+    @Cacheable(cacheNames = "beerUpcCache", key = "#upc", condition = "#showInventoryOnHand == false")
+    @Override
+    public BeerDto getByUpc(String upc, Boolean showInventoryOnHand) {
+        Assert.hasText(upc, "The UPC value must not be null or blank");
+        if ( Boolean.TRUE.equals(showInventoryOnHand) ){
+            return beerMapper.beerToBeerDtoWithInventory(getBeerEntityByUpc(upc));
+        } else {
+            return beerMapper.beerToBeerDto(getBeerEntityByUpc(upc));
+        }
+    }
+
+    private Beer getBeerEntityByUpc(String upc) {
+        return beerRepository.findByUpc(upc)
+                .orElseThrow( () -> new ResourceNotFoundException("Unable to find a beer with UPC: "+upc) );
     }
 
     private Beer getBeerEntityById(UUID beerId) {
