@@ -41,7 +41,7 @@ class BeerControllerTest {
     @Test
     void getBeerById() throws Exception {
         // given
-        given(beerService.getById(any(UUID.class))).willReturn(getBeerDto());
+        given(beerService.getById(any(UUID.class), any(Boolean.class))).willReturn(getBeerDto());
 
         // when
         mockMvc.perform(get("/api/v1/beer" +"/"+ UUID.randomUUID())
@@ -49,7 +49,7 @@ class BeerControllerTest {
                 .andExpect(status().isOk());
 
         // then
-        verify(beerService, times(1)).getById(any(UUID.class));
+        verify(beerService, times(1)).getById(any(UUID.class), any(Boolean.class));
         verifyNoMoreInteractions(beerService);
     }
 

@@ -65,8 +65,12 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public BeerDto getById(UUID beerId) {
-        return beerMapper.beerToBeerDto( getBeerEntityById(beerId) );
+    public BeerDto getById(UUID beerId, Boolean showInventoryOnHand) {
+        if(showInventoryOnHand) {
+            return beerMapper.beerToBeerDtoWithInventory(getBeerEntityById(beerId));
+        } else {
+            return beerMapper.beerToBeerDto(getBeerEntityById(beerId));
+        }
     }
 
     @Override
