@@ -1,9 +1,7 @@
 package guru.springframework.msscbeerservice.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Version;
+import guru.springframework.msscbeerservice.web.model.BeerStyleEnum;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -36,7 +34,8 @@ public class Beer {
     @UpdateTimestamp
     private Timestamp lastModifiedDate;
     private String beerName;
-    private String beerStyle;
+    @Enumerated(EnumType.STRING)
+    private BeerStyleEnum beerStyle;
 
     @Column(unique = true)
     private String upc;

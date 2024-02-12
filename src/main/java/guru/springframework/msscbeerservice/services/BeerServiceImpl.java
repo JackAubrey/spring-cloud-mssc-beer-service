@@ -88,7 +88,7 @@ public class BeerServiceImpl implements BeerService {
         var beer = getBeerEntityById(beerId);
 
         beer.setBeerName(beerDto.getBeerName());
-        beer.setBeerStyle(beerDto.getBeerStyle().name());
+        beer.setBeerStyle(beerDto.getBeerStyle());
         beer.setPrice(beerDto.getPrice());
         beer.setUpc(beerDto.getUpc());
 
