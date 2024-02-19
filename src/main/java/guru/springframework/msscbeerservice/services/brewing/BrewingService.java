@@ -1,4 +1,4 @@
-package guru.springframework.msscbeerservice.services;
+package guru.springframework.msscbeerservice.services.brewing;
 
 import guru.springframework.msscbeerservice.config.JmsConfig;
 import guru.springframework.msscbeerservice.events.BrewBeerEvent;
@@ -27,8 +27,8 @@ public class BrewingService {
                 .forEach(beer -> {
                     Integer invQQH = beerInventoryService.getOnHandInventory(beer.getId());
 
-                    log.debug("Min OnHand is: {}", beer.getMinOnHand());
-                    log.debug("Min OnHand is: {}", invQQH);
+                    log.debug("Beer Min OnHand is: {}", beer.getMinOnHand());
+                    log.debug("Inventory OnHand is: {}", invQQH);
 
                     if(beer.getMinOnHand() >= invQQH) {
                         jmsTemplate.convertAndSend(JmsConfig.BREWING_REQUEST_QUEUE, new BrewBeerEvent(beerMapper.beerToBeerDto(beer)));
