@@ -3,7 +3,7 @@ package guru.springframework.msscbeerservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"guru.sfg.beer.common", "guru.springframework.msscbeerservice"})
 public class MsscBeerServiceApplication {
 
     public static void main(String[] args) {
