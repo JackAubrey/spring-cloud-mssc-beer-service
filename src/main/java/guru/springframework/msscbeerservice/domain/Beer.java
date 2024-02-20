@@ -4,8 +4,10 @@ import guru.springframework.msscbeerservice.web.model.BeerStyleEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.descriptor.jdbc.VarcharJdbcType;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class Beer {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
+    @JdbcType(VarcharJdbcType.class)
     private UUID id;
 
     @Version
