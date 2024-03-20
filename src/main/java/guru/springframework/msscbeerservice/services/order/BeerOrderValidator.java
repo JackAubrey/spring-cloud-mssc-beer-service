@@ -31,6 +31,6 @@ public class BeerOrderValidator {
         });
 
         log.debug("The BeerOrder ID {} is valid {}", beerOrderDto.getId(), valid.get());
-        return Boolean.valueOf(valid.get());
+        return valid.get();
     }
 }
