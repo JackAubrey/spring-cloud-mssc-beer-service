@@ -3,13 +3,13 @@ package guru.springframework.msscbeerservice.services.inventory;
 import guru.springframework.msscbeerservice.services.inventory.model.BeerInventoryDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -19,13 +19,11 @@ import java.util.UUID;
 /**
  * Created by jt on 2019-06-07.
  */
-@Profile("!local-discovery")
 @Slf4j
+@ConditionalOnProperty(name = "config.beer-inventory-service.client", havingValue = "rest-template-client", matchIfMissing = true)
 @ConfigurationProperties(prefix = "sfg.brewery", ignoreUnknownFields = true)
-@Component
+@Service
 public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryService {
-
-    public static final String INVENTORY_PATH = "/api/v1/beer/{beerId}/inventory";
     private final RestTemplate restTemplate;
 
     private String beerInventoryServiceHost;
@@ -37,6 +35,7 @@ public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryServic
     public BeerInventoryServiceRestTemplateImpl(RestTemplateBuilder restTemplateBuilder,
                                                 @Value("${sfg.brewery.inventory-user}") String inventoryUser,
                                                 @Value("${sfg.brewery.inventory-password}")String inventoryPassword) {
+        log.info(">>> Beer Inventory Service Rest Template is Up & Running");
         this.restTemplate = restTemplateBuilder
                 .basicAuthentication(inventoryUser, inventoryPassword)
                 .build();
@@ -45,7 +44,7 @@ public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryServic
     @Override
     public Integer getOnHandInventory(UUID beerId) {
 
-        log.debug("Calling Inventory Service");
+        log.debug("Calling Inventory Service using RestTemplate");
 
         ResponseEntity<List<BeerInventoryDto>> responseEntity = restTemplate
                 .exchange(beerInventoryServiceHost + INVENTORY_PATH, HttpMethod.GET, null,
@@ -56,6 +55,8 @@ public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryServic
                 .stream()
                 .mapToInt(BeerInventoryDto::getQuantityOnHand)
                 .sum();
+
+        log.debug("Received from Rest Template | BeerId {} On hand is: {}", beerId, onHand);
 
         return onHand;
     }
