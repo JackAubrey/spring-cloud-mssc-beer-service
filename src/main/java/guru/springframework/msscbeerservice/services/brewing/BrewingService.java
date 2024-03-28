@@ -21,7 +21,7 @@ public class BrewingService {
     private final JmsTemplate jmsTemplate;
 
 
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 30000)
     public void checkForLowInventory () {
         beerRepository.findAll().forEach(beer -> {
             Integer invQOH = beerInventoryService.getOnHandInventory(beer.getId());
