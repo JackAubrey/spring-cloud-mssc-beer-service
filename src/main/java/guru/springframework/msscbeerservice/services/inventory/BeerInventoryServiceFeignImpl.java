@@ -1,9 +1,8 @@
 package guru.springframework.msscbeerservice.services.inventory;
 
 import guru.springframework.msscbeerservice.services.inventory.model.BeerInventoryDto;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +11,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
-@ConditionalOnProperty(name = "config.beer-inventory-service.client", havingValue = "feign-client")
+@Profile("local-discovery")
 @Service
 public class BeerInventoryServiceFeignImpl implements BeerInventoryService {
     private final InventoryServiceFeignClient inventoryServiceFeignClient;
