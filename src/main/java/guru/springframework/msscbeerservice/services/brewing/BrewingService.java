@@ -5,20 +5,28 @@ import guru.springframework.msscbeerservice.config.JmsConfig;
 import guru.springframework.msscbeerservice.repositories.BeerRepository;
 import guru.springframework.msscbeerservice.services.inventory.BeerInventoryService;
 import guru.springframework.msscbeerservice.web.mappers.BeerMapper;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.observation.ObservationRegistry;
+import jakarta.jms.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class BrewingService {
+public class BrewingService extends JmsTemplatePublish {
     private final BeerRepository beerRepository;
     private final BeerInventoryService beerInventoryService;
     private final BeerMapper beerMapper;
-    private final JmsTemplate jmsTemplate;
+
+    public BrewingService(ObservationRegistry observationRegistry, ConnectionFactory connectionFactory,
+                          BeerRepository beerRepository, BeerInventoryService beerInventoryService, BeerMapper beerMapper,
+                          MessageConverter messageConverter) {
+        super(observationRegistry, connectionFactory, messageConverter);
+        this.beerRepository = beerRepository;
+        this.beerInventoryService = beerInventoryService;
+        this.beerMapper = beerMapper;
+    }
 
 
     @Scheduled(fixedRate = 30000)
@@ -30,7 +38,7 @@ public class BrewingService {
 
             if(beer.getMinOnHand() >= invQOH) {
                 log.debug("Send Brewing Request for Beer {} {}", beer.getBeerName(), beer.getId());
-                jmsTemplate.convertAndSend(JmsConfig.BREWING_REQUEST_QUEUE, new BrewBeerEvent(beerMapper.beerToBeerDto(beer)));
+                getJmsTemplate().convertAndSend(JmsConfig.BREWING_REQUEST_QUEUE, new BrewBeerEvent(beerMapper.beerToBeerDto(beer)));
             }
         });
     }

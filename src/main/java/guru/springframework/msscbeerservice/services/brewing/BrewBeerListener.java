@@ -1,24 +1,29 @@
 package guru.springframework.msscbeerservice.services.brewing;
 
-import guru.springframework.msscbeerservice.config.JmsConfig;
-import guru.springframework.msscbeerservice.domain.Beer;
+import guru.sfg.brewery.model.BeerDto;
 import guru.sfg.brewery.model.events.BrewBeerEvent;
 import guru.sfg.brewery.model.events.NewInventoryEvent;
+import guru.springframework.msscbeerservice.config.JmsConfig;
+import guru.springframework.msscbeerservice.domain.Beer;
 import guru.springframework.msscbeerservice.repositories.BeerRepository;
-import guru.sfg.brewery.model.BeerDto;
+import io.micrometer.observation.ObservationRegistry;
+import jakarta.jms.ConnectionFactory;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
-public class BrewBeerListener {
+public class BrewBeerListener extends JmsTemplatePublish {
     private final BeerRepository beerRepository;
-    private final JmsTemplate jmsTemplate;
+
+    public BrewBeerListener(ObservationRegistry observationRegistry, ConnectionFactory connectionFactory, BeerRepository beerRepository,
+                            MessageConverter messageConverter) {
+        super(observationRegistry, connectionFactory, messageConverter);
+        this.beerRepository = beerRepository;
+    }
 
     @Transactional
     @JmsListener(destination = JmsConfig.BREWING_REQUEST_QUEUE)
@@ -31,6 +36,6 @@ public class BrewBeerListener {
         log.info("Brewing Beer {} {} QOH: {}", beer.getBeerName(), beer.getId(), beerDto.getQuantityOnHand());
 
         NewInventoryEvent inventoryEvent = new NewInventoryEvent(beerDto);
-        jmsTemplate.convertAndSend(JmsConfig.NEW_INVENTORY_QUEUE, inventoryEvent);
+        getJmsTemplate().convertAndSend(JmsConfig.NEW_INVENTORY_QUEUE, inventoryEvent);
     }
 }
