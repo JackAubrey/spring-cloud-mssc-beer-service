@@ -13,9 +13,6 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>mssc-beer-service</name>
     <description>MSSC Beer Service</description>
-    <properties>
-        <zipkin.version>3.3.0</zipkin.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -46,6 +43,10 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
@@ -58,26 +59,19 @@
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-micrometer</artifactId>
         </dependency>
-
         <dependency>
             <groupId>io.zipkin.reporter2</groupId>
             <artifactId>zipkin-reporter-brave</artifactId>
-            <version>${zipkin.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.zipkin.reporter2</groupId>
-            <artifactId>zipkin-sender-amqp-client</artifactId>
-            <version>${zipkin.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.zipkin.reporter2</groupId>
-            <artifactId>zipkin-sender-activemq-client</artifactId>
-            <version>${zipkin.version}</version>
-            <scope>provided</scope>
+            <groupId>io.zipkin.brave</groupId>
+            <artifactId>brave-instrumentation-jms</artifactId>
         </dependency>
 
-        <!-- LogStash is used to grab logs and moving somewhere in order to consolidate those -->
+
+        <!-- Logstash is a log pipeline tool that accepts inputs from various sources -->
+        <!-- executes different transformations, and exports the data to various targets. -->
+        <!-- It is a dynamic data collection pipeline with an extensible plugin ecosystem -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
