@@ -6,13 +6,22 @@
     <parent>
         <groupId>guru.springframework</groupId>
         <artifactId>mssc-brewery-bom</artifactId>
-        <version>1.1.4</version>
+        <version>1.1.5</version>
     </parent>
 
     <artifactId>mssc-beer-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>mssc-beer-service</name>
     <description>MSSC Beer Service</description>
+    <properties>
+        <project.repo-name>spring-cloud-mssc-beer-service</project.repo-name>
+    </properties>
+    <scm>
+        <connection>scm:git:git@github.com:JackAubrey/${project.repo-name}.git</connection>
+        <developerConnection>scm:git:git@github.com:JackAubrey/${project.repo-name}.git</developerConnection>
+        <url>https://github.com/JackAubrey/${project.repo-name}</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <dependencies>
         <dependency>
