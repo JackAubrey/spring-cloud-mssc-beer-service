@@ -14,3 +14,10 @@ Learn more about my courses below!
 | Brewery Beer Service | 8080 |
 | [Brewery Beer Order Service](https://github.com/springframeworkguru/mssc-beer-order-service) | 8081 |
 | [Brewery Beer Inventory Service](https://github.com/springframeworkguru/mssc-beer-inventory-service) | 8082 |
+
+
+## Commands used to push to DockerHub and manage the version:
+* mvn release:prepare
+* mvn release:perform
+* git checkout tags/<TAG>
+* mvn clean package -DskipTests docker:build docker:push
