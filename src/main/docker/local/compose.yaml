@@ -13,3 +13,11 @@ services:
     image: dcividin/mssc-brewery-eureka:1.0.1
     ports:
       - "8761:8761"
+  config-server:
+    image: dcividin/mssc-config-server:1.0.1
+    ports:
+      - "8888:8888"
+    depends_on:
+      - eureka
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
