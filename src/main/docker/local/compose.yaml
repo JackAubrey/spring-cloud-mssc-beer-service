@@ -10,6 +10,6 @@ services:
     ports:
       - "9411:9411"
   eureka:
-    image: dcividin/mssc-brewery-eureka
+    image: dcividin/mssc-brewery-eureka:1.0.1
     ports:
       - "8761:8761"
