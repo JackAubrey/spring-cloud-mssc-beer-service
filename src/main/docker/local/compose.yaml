@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 services:
   jms:
     image: vromero/activemq-artemis
@@ -10,14 +10,51 @@ services:
     ports:
       - "9411:9411"
   eureka:
-    image: dcividin/mssc-brewery-eureka:1.0.1
+    image: dcividin/mssc-brewery-eureka:1.0.3
     ports:
       - "8761:8761"
-  config-server:
-    image: dcividin/mssc-config-server:1.0.1
+#    healthcheck:
+#      test: "curl --fail --silent netflix:eureka@localhost:8761/actuator/health | grep UP || exit 1"
+#      interval: 2s
+#      timeout: 3s
+#      retries: 5
+  config-service:
+    image: dcividin/mssc-config-server:1.0.3
     ports:
       - "8888:8888"
+#    depends_on:
+#      eureka:
+#        condition: service_healthy
     depends_on:
       - eureka
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+#    healthcheck:
+#      test: "curl --fail --silent localhost:8888/actuator/health | grep UP || exit 1"
+#      interval: 2s
+#      timeout: 3s
+#      retries: 5
+#      start_period: 1s
+  inventory-service:
+    image: dcividin/mssc-beer-inventory-service:1.0.2
+    ports:
+      - "8082:8082"
+    depends_on:
+      - config-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
+      SPRING_PROFILES_ACTIVE: cloud-local,localmysql
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
+      SPRING_CLOUD_CONFIG_USERNAME: MyUserName
+      SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
+      SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
+      SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
+#      SPRING_CLOUD_CONFIG_MAXATTEMPTS: 10
+#      SPRING_CLOUD_CONFIG_MAXINTERVAL: 1500
+#      SPRING_CLOUD_CONFIG_MULTIPLIER: 1.2
+#      SPRING_CLOUD_CONFIG_INITIALINTERVAL: 1100
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerinventoryservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
