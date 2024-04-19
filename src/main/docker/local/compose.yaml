@@ -72,6 +72,8 @@ services:
       - eureka
       - config-service
       - jms
+      - gateway-service
+      - inventory-failover-service
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
