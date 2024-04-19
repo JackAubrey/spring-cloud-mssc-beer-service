@@ -10,7 +10,7 @@ services:
     ports:
       - "9411:9411"
   eureka:
-    image: dcividin/mssc-brewery-eureka:1.0.3
+    image: dcividin/mssc-brewery-eureka:1.0.4
     ports:
       - "8761:8761"
 #    healthcheck:
@@ -39,15 +39,18 @@ services:
 #      retries: 5
 #      start_period: 1s
   inventory-service:
-    image: dcividin/mssc-beer-inventory-service:1.0.2
+    image: dcividin/mssc-beer-inventory-service:1.0.4
     ports:
       - "8082:8082"
     depends_on:
+      - eureka
       - config-service
+      - jms
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
+      SPRING_ARTEMIS_HOST: jms
       SPRING_CLOUD_CONFIG_USERNAME: MyUserName
       SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
       SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
