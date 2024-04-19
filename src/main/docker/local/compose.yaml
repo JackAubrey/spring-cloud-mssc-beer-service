@@ -39,7 +39,7 @@ services:
 #      retries: 5
 #      start_period: 1s
   gateway-service:
-    image: dcividin/mssc-brewery-gateway:1.0.1
+    image: dcividin/mssc-brewery-gateway:1.0.2
     ports:
       - "9090:9090"
     depends_on:
@@ -56,8 +56,13 @@ services:
       SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
       SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
       SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
+      SPRING_CLOUD_CONFIG_FAILFAST: true
+      SPRING_CLOUD_CONFIG_RETRY_MAXATTEMPTS: 30
+      SPRING_CLOUD_CONFIG_RETRY_MAXINTERVAL: 5000
+      SPRING_CLOUD_CONFIG_RETRY_MULTIPLIER: 1.2
+      SPRING_CLOUD_CONFIG_RETRY_INITIALINTERVAL: 2000
   inventory-failover-service:
-    image: cividin/mssc-beer-failover-inventory-service:1.0.3
+    image: cividin/mssc-beer-failover-inventory-service:1.0.4
     ports:
       - "8083:8083"
     depends_on:
@@ -86,14 +91,15 @@ services:
       SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
       SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
       SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
-#      SPRING_CLOUD_CONFIG_MAXATTEMPTS: 10
-#      SPRING_CLOUD_CONFIG_MAXINTERVAL: 1500
-#      SPRING_CLOUD_CONFIG_MULTIPLIER: 1.2
-#      SPRING_CLOUD_CONFIG_INITIALINTERVAL: 1100
+      SPRING_CLOUD_CONFIG_FAILFAST: true
+      SPRING_CLOUD_CONFIG_RETRY_MAXATTEMPTS: 30
+      SPRING_CLOUD_CONFIG_RETRY_MAXINTERVAL: 5000
+      SPRING_CLOUD_CONFIG_RETRY_MULTIPLIER: 1.2
+      SPRING_CLOUD_CONFIG_RETRY_INITIALINTERVAL: 2000
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerinventoryservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
   beer_service:
-    image: dcividin/mssc-beer-service:tagname
+    image: dcividin/mssc-beer-service:1.0.1
     ports:
       - "8080:8080"
     depends_on:
@@ -104,9 +110,9 @@ services:
       - inventory-service
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
-      SPRING_PROFILES_ACTIVE: cloud-local
+      SPRING_PROFILES_ACTIVE: cloud-local,localmysql
       SPRING_ARTEMIS_HOST: jms
-      SFG_BREWERY_BEERINVENTORYSERVICEHOST: http://localhost:8082
+      SFG_BREWERY_BEERINVENTORYSERVICEHOST: http://inventory-service:8082
       SFG_BREWERY_INVENTORYUSER: good
       SFG_BREWERY_INVENTORYPASSWORD: beer
       SPRING_CONFIG_ENABLED: true
@@ -115,6 +121,11 @@ services:
       SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
       SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
       SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
+      SPRING_CLOUD_CONFIG_FAILFAST: true
+      SPRING_CLOUD_CONFIG_RETRY_MAXATTEMPTS: 30
+      SPRING_CLOUD_CONFIG_RETRY_MAXINTERVAL: 5000
+      SPRING_CLOUD_CONFIG_RETRY_MULTIPLIER: 1.2
+      SPRING_CLOUD_CONFIG_RETRY_INITIALINTERVAL: 2000
       SPRING_CLOUD_OPENFEIGN_CIRCUITBREAKER_ENABLED: true
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beer-service?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
