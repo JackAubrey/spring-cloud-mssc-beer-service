@@ -128,4 +128,4 @@ services:
       SPRING_CLOUD_CONFIG_RETRY_INITIALINTERVAL: 2000
       SPRING_CLOUD_OPENFEIGN_CIRCUITBREAKER_ENABLED: true
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
-      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beer-service?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
