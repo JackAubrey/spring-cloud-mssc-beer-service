@@ -38,6 +38,23 @@ services:
 #      timeout: 3s
 #      retries: 5
 #      start_period: 1s
+  gateway-service:
+    image: dcividin/mssc-brewery-gateway:1.0.1
+    ports:
+      - "9090:9090"
+    depends_on:
+      - eureka
+      - config-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
+      EUREKA_CLIENT_REGISTERWITHEUREKA: false
+      EUREKA_CLIENT_FETCHREGISTRY: false
+      SPRING_PROFILES_ACTIVE: cloud-local
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
+      SPRING_CLOUD_CONFIG_USERNAME: MyUserName
+      SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
+      SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
+      SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
   inventory-service:
     image: dcividin/mssc-beer-inventory-service:1.0.4
     ports:
