@@ -7,6 +7,8 @@ FROM openjdk:17.0.2-jdk-slim
 LABEL PROJECT_NAME=${project.artifactId} \
       PROJECT=${project.id}
 
+RUN apt-get -y update; apt-get -y install curl
+
 EXPOSE 8080
 
 WORKDIR application
