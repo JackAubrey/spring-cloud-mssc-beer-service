@@ -50,6 +50,7 @@ services:
       EUREKA_CLIENT_REGISTERWITHEUREKA: false
       EUREKA_CLIENT_FETCHREGISTRY: false
       SPRING_PROFILES_ACTIVE: cloud-local
+      SPRING_CONFIG_ENABLED: true
       SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
       SPRING_CLOUD_CONFIG_USERNAME: MyUserName
       SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
@@ -64,6 +65,7 @@ services:
       - config-service
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
+      SPRING_PROFILES_ACTIVE: cloud-local
   inventory-service:
     image: dcividin/mssc-beer-inventory-service:1.0.4
     ports:
@@ -77,8 +79,9 @@ services:
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
       SPRING_ARTEMIS_HOST: jms
+      SPRING_CONFIG_ENABLED: true
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
       SPRING_CLOUD_CONFIG_USERNAME: MyUserName
       SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
       SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
@@ -89,3 +92,29 @@ services:
 #      SPRING_CLOUD_CONFIG_INITIALINTERVAL: 1100
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerinventoryservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+  beer_service:
+    image: dcividin/mssc-beer-service:tagname
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka
+      - config-service
+      - jms
+      - gateway-service
+      - inventory-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://netflix:eureka@eureka:8761/eureka
+      SPRING_PROFILES_ACTIVE: cloud-local
+      SPRING_ARTEMIS_HOST: jms
+      SFG_BREWERY_BEERINVENTORYSERVICEHOST: http://localhost:8082
+      SFG_BREWERY_INVENTORYUSER: good
+      SFG_BREWERY_INVENTORYPASSWORD: beer
+      SPRING_CONFIG_ENABLED: true
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
+      SPRING_CLOUD_CONFIG_USERNAME: MyUserName
+      SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
+      SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
+      SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
+      SPRING_CLOUD_OPENFEIGN_CIRCUITBREAKER_ENABLED: true
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beer-service?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
