@@ -44,6 +44,12 @@
             <!-- FUNDAMENTAL otherwise will be imported the jar that use javax old libraries -->
             <classifier>jakarta</classifier>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.retry/spring-retry -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+            <version>2.0.5</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
