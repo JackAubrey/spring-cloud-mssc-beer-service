@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
-@Profile("local-discovery")
+@Profile("cloud-local")
 @Service
 public class BeerInventoryServiceFeignImpl implements BeerInventoryService {
     private final InventoryServiceFeignClient inventoryServiceFeignClient;

@@ -20,7 +20,7 @@ import java.util.UUID;
  * Created by jt on 2019-06-07.
  */
 @Slf4j
-@Profile("!local-discovery")
+@Profile("!cloud-local")
 @ConfigurationProperties(prefix = "sfg.brewery", ignoreUnknownFields = true)
 @Service
 public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryService {
