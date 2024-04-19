@@ -99,7 +99,7 @@ services:
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerinventoryservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
   beer_service:
-    image: dcividin/mssc-beer-service:1.0.1
+    image: dcividin/mssc-beer-service:1.0.3
     ports:
       - "8080:8080"
     depends_on:
