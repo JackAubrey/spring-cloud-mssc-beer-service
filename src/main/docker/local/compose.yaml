@@ -75,7 +75,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
   beer_service:
-    image: dcividin/mssc-beer-service:1.0.4
+    image: dcividin/mssc-beer-service:1.0.5
     ports:
       - "8080:8080"
     depends_on:
