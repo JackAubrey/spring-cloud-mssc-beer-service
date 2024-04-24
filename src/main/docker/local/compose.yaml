@@ -21,6 +21,14 @@ services:
 #      interval: 2s
 #      timeout: 3s
 #      retries: 5
+    environment:
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: WARN
+      LOGGING_LEVEL_COM_NETFLIX: WARN
+      LOGGING_LEVEL_ORG_APACHE: WARN
+      LOGGING_LEVEL_GURU_SFG: WARN
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: WARN
   config-service:
     image: dcividin/mssc-config-server:1.0.4
     ports:
@@ -33,9 +41,15 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
-#    healthcheck:
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: WARN
+      LOGGING_LEVEL_COM_NETFLIX: WARN
+      LOGGING_LEVEL_ORG_APACHE: WARN
+      LOGGING_LEVEL_GURU_SFG: WARN
+      LOGGING_LEVEL_COM_SFG: WARN
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: WARN
+  #    healthcheck:
 #      test: "curl --fail --silent localhost:8888/actuator/health | grep UP || exit 1"
 #      interval: 2s
 #      timeout: 3s
@@ -55,7 +69,14 @@ services:
       SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerinventoryservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-  inventory-failover-service:
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: WARN
+      LOGGING_LEVEL_COM_NETFLIX: WARN
+      LOGGING_LEVEL_ORG_APACHE: WARN
+      LOGGING_LEVEL_GURU_SFG: WARN
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: WARN
+  failover-service:
     image: dcividin/mssc-beer-failover-inventory-service:1.0.5
     ports:
       - "8083:8083"
@@ -64,7 +85,14 @@ services:
       - config-service
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
-  beer_service:
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: WARN
+      LOGGING_LEVEL_COM_NETFLIX: WARN
+      LOGGING_LEVEL_ORG_APACHE: WARN
+      LOGGING_LEVEL_GURU_SFG: WARN
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: WARN
+  beer-service:
     image: dcividin/mssc-beer-service:1.0.5
     ports:
       - "8080:8080"
@@ -83,7 +111,14 @@ services:
       SFG_BREWERY_INVENTORYPASSWORD: beer
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-  beer_order_service:
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
+      LOGGING_LEVEL_COM_NETFLIX: DEBUG
+      LOGGING_LEVEL_ORG_APACHE: DEBUG
+      LOGGING_LEVEL_GURU_SFG: DEBUG
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: DEBUG
+  order-service:
     image: dcividin/mssc-beer-order-service:1.0.3
     ports:
       - "8081:8081"
@@ -92,16 +127,23 @@ services:
       - config-service
       - jms
 #      - gateway-service
-      - beer_service
+      - beer-service
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
       SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerorderservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-      SFG_BREWERY_BEERSERVICEHOST: http://beer_service:8080
+      SFG_BREWERY_BEERSERVICEHOST: http://beer-service:8080
       SFG_BREWERY_BEERSERVICEUSER: good
       SFG_BREWERY_BEERSERVICEPASSWORD: beer
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: WARN
+      LOGGING_LEVEL_COM_NETFLIX: WARN
+      LOGGING_LEVEL_ORG_APACHE: WARN
+      LOGGING_LEVEL_GURU_SFG: WARN
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: WARN
   gateway-service:
     image: dcividin/mssc-brewery-gateway:1.0.4
     ports:
@@ -110,9 +152,17 @@ services:
       - eureka
       - config-service
       - inventory-service
-      - inventory-failover-service
-      - beer_service
-      - beer_order_service
+      - failover-service
+      - beer-service
+      - order-service
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       SPRING_PROFILES_ACTIVE: cloud-local
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: WARN
+      LOGGING_LEVEL_COM_NETFLIX: WARN
+      LOGGING_LEVEL_ORG_APACHE: WARN
+      LOGGING_LEVEL_GURU_SFG: WARN
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: WARN
