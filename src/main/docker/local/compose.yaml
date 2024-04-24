@@ -5,6 +5,9 @@ services:
     ports:
       - "8161:8161"
       - "61616:61616"
+    environment:
+      ARTEMIS_USERNAME: artemis
+      ARTEMIS_PASSWORD: artemis
   zipkin:
     image: openzipkin/zipkin
     ports:
@@ -46,23 +49,10 @@ services:
       - eureka
       - config-service
       - jms
-#      - gateway-service
-#      - inventory-failover-service
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
-      SPRING_ARTEMIS_HOST: jms
-#      SPRING_CONFIG_ENABLED: true
-#      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
-#      SPRING_CLOUD_CONFIG_USERNAME: MyUserName
-#      SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
-#      SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
-#      SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
-#      SPRING_CLOUD_CONFIG_FAILFAST: true
-#      SPRING_CLOUD_CONFIG_RETRY_MAXATTEMPTS: 30
-#      SPRING_CLOUD_CONFIG_RETRY_MAXINTERVAL: 5000
-#      SPRING_CLOUD_CONFIG_RETRY_MULTIPLIER: 1.2
-#      SPRING_CLOUD_CONFIG_RETRY_INITIALINTERVAL: 2000
+      SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerinventoryservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
   inventory-failover-service:
@@ -87,26 +77,14 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
-      SPRING_ARTEMIS_HOST: jms
+      SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       SFG_BREWERY_BEERINVENTORYSERVICEHOST: http://inventory-service:8082
       SFG_BREWERY_INVENTORYUSER: good
       SFG_BREWERY_INVENTORYPASSWORD: beer
-#      SPRING_CONFIG_ENABLED: true
-#      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
-#      SPRING_CLOUD_CONFIG_USERNAME: MyUserName
-#      SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
-#      SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
-#      SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
-#      SPRING_CLOUD_CONFIG_FAILFAST: true
-#      SPRING_CLOUD_CONFIG_RETRY_MAXATTEMPTS: 30
-#      SPRING_CLOUD_CONFIG_RETRY_MAXINTERVAL: 5000
-#      SPRING_CLOUD_CONFIG_RETRY_MULTIPLIER: 1.2
-#      SPRING_CLOUD_CONFIG_RETRY_INITIALINTERVAL: 2000
-#      SPRING_CLOUD_OPENFEIGN_CIRCUITBREAKER_ENABLED: true
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
   beer_order_service:
-    image: dcividin/mssc-beer-order-service:1.0.2
+    image: dcividin/mssc-beer-order-service:1.0.3
     ports:
       - "8081:8081"
     depends_on:
@@ -118,19 +96,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
-      SPRING_ARTEMIS_HOST: jms
-#      SPRING_CONFIG_ENABLED: true
-#      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
-#      SPRING_CLOUD_CONFIG_USERNAME: MyUserName
-#      SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
-#      SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
-#      SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
-#      SPRING_CLOUD_CONFIG_FAILFAST: true
-#      SPRING_CLOUD_CONFIG_RETRY_MAXATTEMPTS: 30
-#      SPRING_CLOUD_CONFIG_RETRY_MAXINTERVAL: 5000
-#      SPRING_CLOUD_CONFIG_RETRY_MULTIPLIER: 1.2
-#      SPRING_CLOUD_CONFIG_RETRY_INITIALINTERVAL: 2000
-#      SPRING_CLOUD_OPENFEIGN_CIRCUITBREAKER_ENABLED: true
+      SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerorderservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
       SFG_BREWERY_BEERSERVICEHOST: http://beer_service:8080
@@ -149,17 +115,4 @@ services:
       - beer_order_service
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
-      #      EUREKA_CLIENT_REGISTERWITHEUREKA: false
-      #      EUREKA_CLIENT_FETCHREGISTRY: false
-      SPRING_PROFILES_ACTIVE: local-discovery
-  #      SPRING_CONFIG_ENABLED: true
-  #      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-service:8888"
-  #      SPRING_CLOUD_CONFIG_USERNAME: MyUserName
-  #      SPRING_CLOUD_CONFIG_PASSWORD: MySecretPassword
-  #      SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED: true
-  #      SPRING_CLOUD_CONFIG_IMPORTCHECK_ENABLED: true
-  #      SPRING_CLOUD_CONFIG_FAILFAST: true
-  #      SPRING_CLOUD_CONFIG_RETRY_MAXATTEMPTS: 30
-  #      SPRING_CLOUD_CONFIG_RETRY_MAXINTERVAL: 5000
-  #      SPRING_CLOUD_CONFIG_RETRY_MULTIPLIER: 1.2
-  #      SPRING_CLOUD_CONFIG_RETRY_INITIALINTERVAL: 2000
+      SPRING_PROFILES_ACTIVE: cloud-local
