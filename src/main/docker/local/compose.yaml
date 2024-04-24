@@ -103,7 +103,7 @@ services:
       SFG_BREWERY_BEERSERVICEUSER: good
       SFG_BREWERY_BEERSERVICEPASSWORD: beer
   gateway-service:
-    image: dcividin/mssc-brewery-gateway:1.0.3
+    image: dcividin/mssc-brewery-gateway:1.0.4
     ports:
       - "9090:9090"
     depends_on:
