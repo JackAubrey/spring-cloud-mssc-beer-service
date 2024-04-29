@@ -42,6 +42,7 @@ services:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       EUREKA_INSTANCE_PREFERIPADDRESS: true
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
@@ -70,6 +71,7 @@ services:
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
       SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerinventoryservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
@@ -78,6 +80,7 @@ services:
       LOGGING_LEVEL_ORG_APACHE: INFO
       LOGGING_LEVEL_GURU_SFG: INFO
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
   failover-service:
     image: dcividin/mssc-beer-failover-inventory-service:1.0.5
     ports:
@@ -88,6 +91,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       EUREKA_INSTANCE_PREFERIPADDRESS: true
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
@@ -95,6 +99,7 @@ services:
       LOGGING_LEVEL_ORG_APACHE: INFO
       LOGGING_LEVEL_GURU_SFG: INFO
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
   beer-service:
     image: dcividin/mssc-beer-service:1.0.5
     ports:
@@ -123,6 +128,7 @@ services:
       LOGGING_LEVEL_ORG_APACHE: INFO
       LOGGING_LEVEL_GURU_SFG: INFO
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
   order-service:
     image: dcividin/mssc-beer-order-service:1.0.3
     ports:
@@ -139,6 +145,7 @@ services:
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
       SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerorderservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
       SFG_BREWERY_BEERSERVICEHOST: http://beer-service:8080
       SFG_BREWERY_BEERSERVICEUSER: good
@@ -150,6 +157,7 @@ services:
       LOGGING_LEVEL_ORG_APACHE: INFO
       LOGGING_LEVEL_GURU_SFG: INFO
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
   gateway-service:
     image: dcividin/mssc-brewery-gateway:1.0.4
     ports:
@@ -166,6 +174,7 @@ services:
       EUREKA_INSTANCE_PREFERIPADDRESS: true
       SPRING_PROFILES_ACTIVE: cloud-local
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
@@ -173,3 +182,4 @@ services:
       LOGGING_LEVEL_ORG_APACHE: INFO
       LOGGING_LEVEL_GURU_SFG: INFO
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
