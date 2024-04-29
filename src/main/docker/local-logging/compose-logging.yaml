@@ -1,0 +1,389 @@
+version: "3.9"
+
+volumes:
+  certs:
+    driver: local
+  esdata01:
+    driver: local
+  kibanadata:
+    driver: local
+  metricbeatdata01:
+    driver: local
+  filebeatdata01:
+    driver: local
+  logstashdata01:
+    driver: local
+
+networks:
+  default:
+    name: elastic
+    external: false
+
+services:
+  setup-es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x${KIBANA_PASSWORD} == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: elastic01\n"\
+          "    dns:\n"\
+          "      - elastic01\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          "  - name: kibana\n"\
+          "    dns:\n"\
+          "      - kibana\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://elastic01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://elastic01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/elastic01/elastic01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+  elastic01:
+    depends_on:
+      setup-es:
+        condition: service_healthy
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: elasticsearch
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata01:/usr/share/elasticsearch/data
+    ports:
+      - ${ES_PORT}:9200
+    environment:
+      - node.name=elastic01
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/elastic01/elastic01.key
+      - xpack.security.http.ssl.certificate=certs/elastic01/elastic01.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/elastic01/elastic01.key
+      - xpack.security.transport.ssl.certificate=certs/elastic01/elastic01.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+  kibana:
+    depends_on:
+      elastic01:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: kibana
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - kibanadata:/usr/share/kibana/data
+    ports:
+      - ${KIBANA_PORT}:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://elastic01:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+      - XPACK_SECURITY_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+      - XPACK_REPORTING_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+    mem_limit: ${KB_MEM_LIMIT}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+  metricbeat01:
+    depends_on:
+      elastic01:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    user: root
+    volumes:
+      - certs:/usr/share/metricbeat/certs
+      - metricbeatdata01:/usr/share/metricbeat/data
+      - "./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
+      - "/proc:/hostfs/proc:ro"
+      - "/:/hostfs:ro"
+    environment:
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://elastic01:9200
+      - KIBANA_HOSTS=http://kibana:5601
+      - LOGSTASH_HOSTS=http://logstash01:9600
+  filebeat01:
+    depends_on:
+      elastic01:
+        condition: service_healthy
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    user: root
+    volumes:
+      - certs:/usr/share/filebeat/certs
+      - filebeatdata01:/usr/share/filebeat/data
+      - "./filebeat_ingest_data/:/usr/share/filebeat/ingest_data/"
+      - "./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    environment:
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://elastic01:9200
+      - KIBANA_HOSTS=http://kibana:5601
+      - LOGSTASH_HOSTS=http://logstash01:9600
+  jms:
+    image: vromero/activemq-artemis
+    ports:
+      - "8161:8161"
+      - "61616:61616"
+    environment:
+      ARTEMIS_USERNAME: artemis
+      ARTEMIS_PASSWORD: artemis
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+  eureka:
+    image: dcividin/mssc-brewery-eureka:1.0.5
+    ports:
+      - "8761:8761"
+#    healthcheck:
+#      test: "curl --fail --silent netflix:eureka@localhost:8761/actuator/health | grep UP || exit 1"
+#      interval: 2s
+#      timeout: 3s
+#      retries: 5
+    environment:
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_COM_NETFLIX: INFO
+      LOGGING_LEVEL_ORG_APACHE: INFO
+      LOGGING_LEVEL_GURU_SFG: INFO
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+  config-service:
+    image: dcividin/mssc-config-server:1.0.5
+    ports:
+      - "8888:8888"
+#    depends_on:
+#      eureka:
+#        condition: service_healthy
+    depends_on:
+      - eureka
+    environment:
+      SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
+      EUREKA_INSTANCE_PREFERIPADDRESS: true
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_COM_NETFLIX: INFO
+      LOGGING_LEVEL_ORG_APACHE: INFO
+      LOGGING_LEVEL_GURU_SFG: INFO
+      LOGGING_LEVEL_COM_SFG: INFO
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+  #    healthcheck:
+#      test: "curl --fail --silent localhost:8888/actuator/health | grep UP || exit 1"
+#      interval: 2s
+#      timeout: 3s
+#      retries: 5
+#      start_period: 1s
+  inventory-service:
+    image: dcividin/mssc-beer-inventory-service:1.0.6
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka
+      - config-service
+      - jms
+    environment:
+      SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
+      EUREKA_INSTANCE_PREFERIPADDRESS: true
+      SPRING_PROFILES_ACTIVE: cloud-local,localmysql
+      SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerinventoryservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_COM_NETFLIX: INFO
+      LOGGING_LEVEL_ORG_APACHE: INFO
+      LOGGING_LEVEL_GURU_SFG: INFO
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
+    labels:
+      collect_logs_with_filebeat: "true"
+      decode_log_event_to_json_object: "true"
+  failover-service:
+    image: dcividin/mssc-beer-failover-inventory-service:1.0.6
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka
+      - config-service
+    environment:
+      SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
+      EUREKA_INSTANCE_PREFERIPADDRESS: true
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_COM_NETFLIX: INFO
+      LOGGING_LEVEL_ORG_APACHE: INFO
+      LOGGING_LEVEL_GURU_SFG: INFO
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
+    labels:
+      collect_logs_with_filebeat: "true"
+      decode_log_event_to_json_object: "true"
+  beer-service:
+    image: dcividin/mssc-beer-service:1.0.6
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka
+      - config-service
+      - jms
+#      - gateway-service
+      - inventory-service
+    environment:
+      SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
+      EUREKA_INSTANCE_PREFERIPADDRESS: true
+      SPRING_PROFILES_ACTIVE: cloud-local,localmysql
+      SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
+      SFG_BREWERY_BEERINVENTORYSERVICEHOST: http://inventory-service:8082
+      SFG_BREWERY_INVENTORYUSER: good
+      SFG_BREWERY_INVENTORYPASSWORD: beer
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_COM_NETFLIX: INFO
+      LOGGING_LEVEL_ORG_APACHE: INFO
+      LOGGING_LEVEL_GURU_SFG: INFO
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
+    labels:
+      collect_logs_with_filebeat: "true"
+      decode_log_event_to_json_object: "true"
+  order-service:
+    image: dcividin/mssc-beer-order-service:1.0.5
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka
+      - config-service
+      - jms
+#      - gateway-service
+      - beer-service
+    environment:
+      SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
+      EUREKA_INSTANCE_PREFERIPADDRESS: true
+      SPRING_PROFILES_ACTIVE: cloud-local,localmysql
+      SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/beerorderservice?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      SFG_BREWERY_BEERSERVICEHOST: http://beer-service:8080
+      SFG_BREWERY_BEERSERVICEUSER: good
+      SFG_BREWERY_BEERSERVICEPASSWORD: beer
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_COM_NETFLIX: INFO
+      LOGGING_LEVEL_ORG_APACHE: INFO
+      LOGGING_LEVEL_GURU_SFG: INFO
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
+    labels:
+      collect_logs_with_filebeat: "true"
+      decode_log_event_to_json_object: "true"
+  gateway-service:
+    image: dcividin/mssc-brewery-gateway:1.0.5
+    ports:
+      - "9090:9090"
+    depends_on:
+      - eureka
+      - config-service
+      - inventory-service
+      - failover-service
+      - beer-service
+      - order-service
+    environment:
+      SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
+      EUREKA_INSTANCE_PREFERIPADDRESS: true
+      SPRING_PROFILES_ACTIVE: cloud-local
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_COM_NETFLIX: INFO
+      LOGGING_LEVEL_ORG_APACHE: INFO
+      LOGGING_LEVEL_GURU_SFG: INFO
+      LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
+    restart: on-failure
+    labels:
+      collect_logs_with_filebeat: "true"
+      decode_log_event_to_json_object: "true"
