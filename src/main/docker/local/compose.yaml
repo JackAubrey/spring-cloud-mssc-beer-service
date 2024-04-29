@@ -13,7 +13,7 @@ services:
     ports:
       - "9411:9411"
   eureka:
-    image: dcividin/mssc-brewery-eureka:1.0.4
+    image: dcividin/mssc-brewery-eureka:1.0.5
     ports:
       - "8761:8761"
 #    healthcheck:
@@ -30,7 +30,7 @@ services:
       LOGGING_LEVEL_GURU_SFG: INFO
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
   config-service:
-    image: dcividin/mssc-config-server:1.0.4
+    image: dcividin/mssc-config-server:1.0.5
     ports:
       - "8888:8888"
 #    depends_on:
@@ -58,7 +58,7 @@ services:
 #      retries: 5
 #      start_period: 1s
   inventory-service:
-    image: dcividin/mssc-beer-inventory-service:1.0.5
+    image: dcividin/mssc-beer-inventory-service:1.0.6
     ports:
       - "8082:8082"
     depends_on:
@@ -82,7 +82,7 @@ services:
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
     restart: on-failure
   failover-service:
-    image: dcividin/mssc-beer-failover-inventory-service:1.0.5
+    image: dcividin/mssc-beer-failover-inventory-service:1.0.6
     ports:
       - "8083:8083"
     depends_on:
@@ -101,7 +101,7 @@ services:
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
     restart: on-failure
   beer-service:
-    image: dcividin/mssc-beer-service:1.0.5
+    image: dcividin/mssc-beer-service:1.0.6
     ports:
       - "8080:8080"
     depends_on:
@@ -130,7 +130,7 @@ services:
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
     restart: on-failure
   order-service:
-    image: dcividin/mssc-beer-order-service:1.0.3
+    image: dcividin/mssc-beer-order-service:1.0.4
     ports:
       - "8081:8081"
     depends_on:
@@ -159,7 +159,7 @@ services:
       LOGGING_LEVEL_GURU_SPRINGFRAMEWORK: INFO
     restart: on-failure
   gateway-service:
-    image: dcividin/mssc-brewery-gateway:1.0.4
+    image: dcividin/mssc-brewery-gateway:1.0.5
     ports:
       - "9090:9090"
     depends_on:
