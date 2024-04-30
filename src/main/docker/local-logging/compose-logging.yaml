@@ -328,7 +328,7 @@ services:
       collect_logs_with_filebeat: "true"
       decode_log_event_to_json_object: "true"
   order-service:
-    image: dcividin/mssc-beer-order-service:1.0.5
+    image: dcividin/mssc-beer-order-service:1.0.6
     ports:
       - "8081:8081"
     depends_on:
