@@ -230,6 +230,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       EUREKA_INSTANCE_PREFERIPADDRESS: true
+      EUREKA_INSTANCE_IPADDRESS: localhost
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
@@ -257,6 +258,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       EUREKA_INSTANCE_PREFERIPADDRESS: true
+      EUREKA_INSTANCE_IPADDRESS: localhost
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
       SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
@@ -283,6 +285,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       EUREKA_INSTANCE_PREFERIPADDRESS: true
+      EUREKA_INSTANCE_IPADDRESS: localhost
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: INFO
@@ -308,6 +311,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       EUREKA_INSTANCE_PREFERIPADDRESS: true
+      EUREKA_INSTANCE_IPADDRESS: localhost
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
       SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       SFG_BREWERY_BEERINVENTORYSERVICEHOST: http://inventory-service:8082
@@ -340,6 +344,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       EUREKA_INSTANCE_PREFERIPADDRESS: true
+      EUREKA_INSTANCE_IPADDRESS: localhost
       SPRING_PROFILES_ACTIVE: cloud-local,localmysql
       SPRING_ARTEMIS_BROKERURL: tcp://jms:61616
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
@@ -373,6 +378,7 @@ services:
     environment:
       SERVICE_EUREKA_URL_DEFAULT_ZONE_WKA: http://netflix:eureka@eureka:8761/eureka
       EUREKA_INSTANCE_PREFERIPADDRESS: true
+      EUREKA_INSTANCE_IPADDRESS: localhost
       SPRING_PROFILES_ACTIVE: cloud-local
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: metrics, info, health, prometheus, mappings, jms
